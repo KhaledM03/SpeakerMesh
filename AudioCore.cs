@@ -1,8 +1,8 @@
 using System.Text;
 namespace SpeakerMesh;
 public enum ChannelMode { Stereo, Left, Right, Mono }
-public record OutputConfig(string Id, string Name, double DelayMs=0, double Gain=.5, ChannelMode Channel=ChannelMode.Stereo);
-public record Profile(string SourceId, string FilePath, int SourceMode, List<OutputConfig> Outputs);
+public record OutputConfig(string Id, string Name, double DelayMs=0, double Gain=.5, ChannelMode Channel=ChannelMode.Stereo, bool Muted=false);
+public record Profile(string SourceId, string FilePath, int SourceMode, List<OutputConfig> Outputs, int Version=1, bool MirrorInputVolume=false);
 public interface IAudioSource { int Rate { get; } double Duration { get; } void Read(double start, float[] destination, int frames); }
 public static class Mix {
  public static double Position(double elapsed,int padding,int rate,double baseMs,double delayMs)=>(elapsed-(baseMs+delayMs)/1000)*rate+padding;

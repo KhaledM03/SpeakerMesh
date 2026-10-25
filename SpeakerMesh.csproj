@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
  <PropertyGroup>
-  <OutputType>WinExe</OutputType><TargetFramework>net9.0-windows</TargetFramework><UseWPF>true</UseWPF>
-  <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><Version>0.4.0</Version><ApplicationManifest>app.manifest</ApplicationManifest>
+  <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms>
+  <Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><Version>0.5.0</Version><ApplicationManifest>app.manifest</ApplicationManifest>
  </PropertyGroup>
- <ItemGroup><Compile Remove="MainForm.cs" /></ItemGroup>
+ <ItemGroup>
+  <Using Remove="System.Windows.Forms"/><Using Remove="System.Drawing"/>
+  <Compile Remove="Core/**/*.cs;Tests/**/*.cs;AudioCore.cs;Timing.cs;AcousticAnalysis.cs;LiveControls.cs;ProfileStore.cs;Routing.cs;**/obj/**/*.cs;**/bin/**/*.cs"/>
+  <ProjectReference Include="Core/SpeakerMesh.Core.csproj"/>
+ </ItemGroup>
 </Project>
-

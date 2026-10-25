@@ -34,6 +34,7 @@ public sealed class CalibrationWindow:Window {
   cancel.Click+=(_,_)=> {if(running){cancellation?.Cancel();progress.Text="Stopping test tones and microphone...";}else Close();};
   Closing+=(_,e)=> {if(running&&!allowClose){e.Cancel=true;cancellation?.Cancel();progress.Text="Stopping test tones and microphone...";}};
  }
+ public void CancelMeasurement() {if(running)cancellation?.Cancel();else Close();}
  public void RenderPreview(string path) {
   layout.Background=Background;layout.Measure(new Size(510,560));layout.Arrange(new Rect(0,0,510,560));layout.UpdateLayout();
   var bitmap=new System.Windows.Media.Imaging.RenderTargetBitmap(510,560,96,96,PixelFormats.Pbgra32);bitmap.Render(layout);

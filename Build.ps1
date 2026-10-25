@@ -1,11 +1,14 @@
-# Build and verify with the .NET 9 SDK; no external packages are required.
+# Build from the actual checkout layout; every native command's exit code matters.
+param([switch]$Publish)
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
 try {
- dotnet restore Source/SpeakerMesh/SpeakerMesh.csproj --ignore-failed-sources
- if ($LASTEXITCODE -ne 0) { throw 'Application restore failed.' }
- dotnet build Source/SpeakerMesh/SpeakerMesh.csproj -c Release --no-restore -p:UseSharedCompilation=false
+ dotnet build SpeakerMesh.csproj -c Release -p:UseSharedCompilation=false
  if ($LASTEXITCODE -ne 0) { throw 'Application build failed.' }
- dotnet run --project Source/SpeakerMesh.Tests/SpeakerMesh.Tests.csproj -c Release -p:UseSharedCompilation=false -- --devices --startup-failure
- if ($LASTEXITCODE -ne 0) { throw 'Verification failed.' }
+ dotnet run --project SpeakerMesh.Tests.csproj -c Release
+ if ($LASTEXITCODE -ne 0) { throw 'Core verification failed.' }
+ if ($Publish) {
+  dotnet publish SpeakerMesh.csproj -c Release -r win-x64 --self-contained true -o artifacts/win-x64 -p:PublishSingleFile=false
+  if ($LASTEXITCODE -ne 0) { throw 'Publish failed.' }
+ }
 } finally { Pop-Location }

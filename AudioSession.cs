@@ -5,7 +5,12 @@ public sealed class AudioSession {
  readonly CancellationTokenSource stop=new();
  readonly ManualResetEventSlim go=new(false);
  readonly List<Task> workers=[];
+ readonly object shutdownGate=new();Task? shutdown;
  readonly List<OutputConfig> outputs;
+ readonly Dictionary<string,LiveGain> gains;
+ public LiveGain Master {get;}=new();
+ public OutputHealth Health {get;}
+ public void SetOutputGain(string id,double gain,bool muted) { if(gains.TryGetValue(id,out var control)) control.Set(gain,muted); }
  readonly string? captureId;
  readonly IAudioSource? fileSource;
  readonly TaskCompletionSource<IAudioSource> sourceReady=new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -23,25 +28,35 @@ public sealed class AudioSession {
   if(outputs.Any(x=>!double.IsFinite(x.DelayMs)||x.DelayMs<0||x.DelayMs>2000||!double.IsFinite(x.Gain)||x.Gain<0||x.Gain>1))
    throw new ArgumentException("Delay must be 0-2000 ms; volume must be 0-100%.");
   if(source==null && captureId==null) throw new ArgumentException("Choose an audio source.");
-  this.outputs=outputs; fileSource=source; this.captureId=captureId; this.report=report;this.outputSources=outputSources;
+  this.outputs=outputs;
+  Health=new(outputs.Select(x=>x.Id));
+  gains=outputs.ToDictionary(x=>x.Id,x=> {var gain=new LiveGain();gain.Set(x.Gain,x.Muted);return gain;}); fileSource=source; this.captureId=captureId; this.report=report;this.outputSources=outputSources;
  }
  double Elapsed=>(Stopwatch.GetTimestamp()-Volatile.Read(ref epoch))/(double)Stopwatch.Frequency;
  public async Task StartAsync() {
+  try {
   if(captureId!=null) workers.Add(Worker(Capture)); else sourceReady.TrySetResult(fileSource!);
   var source=await sourceReady.Task.WaitAsync(TimeSpan.FromSeconds(10));
   using var ready=new CountdownEvent(outputs.Count);
-  foreach(var config in outputs) workers.Add(Worker(()=>Render(config,outputSources!=null&&outputSources.TryGetValue(config.Id,out var perOutput)?perOutput:source,ready)));
+  foreach(var config in outputs) workers.Add(Worker(()=>Render(config,outputSources!=null&&outputSources.TryGetValue(config.Id,out var perOutput)?perOutput:source,ready),config));
   try {
    await Task.Run(()=> { if(!ready.Wait(TimeSpan.FromSeconds(10),stop.Token)) throw new TimeoutException("Audio devices did not initialize in time."); });
    stop.Token.ThrowIfCancellationRequested();
    Volatile.Write(ref epoch,Stopwatch.GetTimestamp()); go.Set();
-   report($"Playing to {outputs.Count} output(s). Stop to adjust delay; test each speaker alone first.");
+   report($"Playing to {outputs.Count} output(s). Volume and mute are live; stop to change routing or delay.");
+  } catch { await StopAsync(); throw; }
   } catch { await StopAsync(); throw; }
  }
- Task Worker(Action action)=>Task.Factory.StartNew(()=> {
+ Task Worker(Action action,OutputConfig? output=null)=>Task.Factory.StartNew(()=> {
   try { action(); }
   catch(OperationCanceledException) { }
   catch(Exception ex) {
+   if(output!=null && go.IsSet && !stop.IsCancellationRequested && outputSources==null) {
+    Health.Fail(output.Id,ex.Message);
+    report(output.Name+": disconnected or failed. Other speakers continue. Stop and restart to rejoin; recalibrate afterward. "+ex.Message);
+    if(Health.Remaining==0) stop.Cancel();
+    return;
+   }
    sourceReady.TrySetException(ex);
    if(Interlocked.Exchange(ref failed,1)==0) { report("Audio stopped: "+ex.Message); stop.Cancel(); go.Set(); }
   }
@@ -58,9 +73,9 @@ public sealed class AudioSession {
    var buffer=new float[capacity*2]; var scratch=new float[((int)Math.Ceiling(capacity*1.002)+2)*2];
    ready.Signal(); go.Wait(stop.Token); stop.Token.ThrowIfCancellationRequested();
    // Prime the complete endpoint buffer before starting; never start an empty stream.
-   var cursor=new PlaybackCursor();
+   var cursor=new PlaybackCursor();var ramp=new GainRamp();
    cursor.Prepare(Mix.Position(Elapsed,0,source.Rate,350,config.DelayMs),source.Rate,source is LiveSource);
-   cursor.Fill(source,buffer,scratch,(int)capacity); Mix.Apply(buffer,(int)capacity,config.Gain,config.Channel);
+   cursor.Fill(source,buffer,scratch,(int)capacity); ramp.Apply(buffer,(int)capacity,source.Rate,gains[config.Id].Effective*Master.Effective,config.Channel);
    NativeAudio.Check(render.GetBuffer(capacity,out IntPtr initial));
    try { Marshal.Copy(buffer,0,initial,(int)capacity*2); }
    finally { NativeAudio.Check(render.ReleaseBuffer(capacity,0)); }
@@ -72,7 +87,7 @@ public sealed class AudioSession {
      double desired=Mix.Position(Elapsed,(int)padding,source.Rate,350,config.DelayMs);
      cursor.Prepare(desired,source.Rate,source is LiveSource);
      cursor.Fill(source,buffer,scratch,(int)count);
-     Mix.Apply(buffer,(int)count,config.Gain,config.Channel);
+     ramp.Apply(buffer,(int)count,source.Rate,gains[config.Id].Effective*Master.Effective,config.Channel);
      NativeAudio.Check(render.GetBuffer(count,out IntPtr target));
      try { Marshal.Copy(buffer,0,target,(int)count*2); }
      finally { NativeAudio.Check(render.ReleaseBuffer(count,0)); }
@@ -124,9 +139,11 @@ public sealed class AudioSession {
   }
  }
  public bool Finished=>stop.IsCancellationRequested;
- public async Task StopAsync() {
-  stop.Cancel(); go.Set();
-  await Task.WhenAll(workers);
+ public Task StopAsync() {lock(shutdownGate) return shutdown??=StopWorkers();}
+ async Task StopWorkers() {
+  stop.Cancel();go.Set();
+  try {await Task.WhenAll(workers);}
+  finally {go.Dispose();stop.Dispose();}
  }
 }
 
