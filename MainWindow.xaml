@@ -1,0 +1,83 @@
+<Window x:Class="SpeakerMesh.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="SpeakerMesh 0.4" Width="1220" Height="850" MinWidth="1060" MinHeight="760" Background="#F5F5F7" FontFamily="Segoe UI Variable Text" Foreground="#1D1D1F" WindowStartupLocation="CenterScreen">
+ <Window.Resources>
+  <SolidColorBrush x:Key="Ink" Color="#1D1D1F"/>
+  <SolidColorBrush x:Key="Muted" Color="#86868B"/>
+  <Style TargetType="Button">
+   <Setter Property="Background" Value="White"/><Setter Property="Foreground" Value="#1D1D1F"/><Setter Property="Padding" Value="17,10"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="BorderThickness" Value="0"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="FontSize" Value="13"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border x:Name="Shell" Background="{TemplateBinding Background}" CornerRadius="16" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Shell" Property="Opacity" Value="0.8"/></Trigger><Trigger Property="IsEnabled" Value="False"><Setter TargetName="Shell" Property="Opacity" Value="0.42"/></Trigger></ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style TargetType="TextBox"><Setter Property="Padding" Value="10,8"/><Setter Property="BorderBrush" Value="#E5E5EA"/><Setter Property="Background" Value="#FAFAFC"/><Setter Property="FontSize" Value="14"/></Style>
+  <Style TargetType="ComboBox">
+   <Setter Property="MinHeight" Value="38"/><Setter Property="FontSize" Value="12"/><Setter Property="Foreground" Value="#1D1D1F"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox">
+    <Grid>
+     <ToggleButton Focusable="False" IsChecked="{Binding IsDropDownOpen,RelativeSource={RelativeSource TemplatedParent},Mode=TwoWay}">
+      <ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="White" CornerRadius="11" Padding="11,9"><Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="14"/></Grid.ColumnDefinitions><ContentPresenter/><TextBlock Grid.Column="1" Text="⌄" Foreground="#7B8A9D" VerticalAlignment="Center"/></Grid></Border></ControlTemplate></ToggleButton.Template>
+      <ContentPresenter Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,0,6,0"/>
+     </ToggleButton>
+     <Popup x:Name="PART_Popup" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade"><Border MinWidth="{TemplateBinding ActualWidth}" Background="White" CornerRadius="12" Padding="6" BorderBrush="#E5E5EA" BorderThickness="1"><ScrollViewer MaxHeight="220"><ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/></ScrollViewer></Border></Popup>
+    </Grid>
+    <ControlTemplate.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger></ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style TargetType="Slider">
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider"><Grid Height="23" Background="Transparent">
+    <Track x:Name="PART_Track" IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+     <Track.DecreaseRepeatButton><RepeatButton Command="Slider.DecreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Height="4" Background="#007AFF" CornerRadius="2"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton>
+     <Track.Thumb><Thumb Width="17" Height="17"><Thumb.Template><ControlTemplate TargetType="Thumb"><Ellipse Fill="White" Stroke="#007AFF" StrokeThickness="3"/></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
+     <Track.IncreaseRepeatButton><RepeatButton Command="Slider.IncreaseLarge" Focusable="False"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Height="4" Background="#E8E8ED" CornerRadius="2"/></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
+    </Track>
+   </Grid></ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/></Style>
+ </Window.Resources>
+ <Grid x:Name="Root" Margin="32,24,32,20" Background="#F5F5F7">
+  <Grid.RowDefinitions><RowDefinition Height="72"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+  <Grid Grid.Row="0">
+   <StackPanel Orientation="Horizontal" VerticalAlignment="Top"><Border Width="43" Height="43" CornerRadius="15" Background="#007AFF" Margin="0,0,12,0"><TextBlock Text="&#x223F;" Foreground="#FFFFFF" FontSize="31" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><StackPanel><TextBlock Text="SpeakerMesh" FontSize="24" FontWeight="Bold"/><TextBlock Text="Your speakers. One sound." Foreground="{StaticResource Muted}" FontSize="12"/></StackPanel></StackPanel>
+   <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"><Button x:Name="AutoSyncButton" Content="Auto Sync" Click="AutoSyncClick" Background="#007AFF" Foreground="White" Margin="0,0,10,0"/><Button Content="Refresh devices" Click="RefreshClick" Margin="0,0,10,0"/><Button Content="Set up audio output" Click="SetupClick" Background="#E8F2FF" Foreground="#007AFF"/></StackPanel>
+  </Grid>
+  <Border Grid.Row="1" x:Name="SetupBanner" CornerRadius="18" Background="#FFF5E5" Padding="18,13" Margin="0,0,0,18">
+   <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel><TextBlock x:Name="SetupHeadline" Text="One setup step, then all your sound lands here." FontWeight="SemiBold" FontSize="14"/><TextBlock x:Name="SetupHint" Text="Install a virtual audio input so SpeakerMesh can appear in Windows Sound settings." Foreground="#80643D" FontSize="12" Margin="0,4,0,0"/></StackPanel><Button x:Name="DefaultButton" Grid.Column="1" Content="Finish setup" Click="DefaultClick" Background="#FFFFFF" Margin="16,0,0,0" VerticalAlignment="Center"/></Grid>
+  </Border>
+  <Grid Grid.Row="2">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="294"/></Grid.ColumnDefinitions>
+   <Border Grid.Column="0" CornerRadius="28" Background="White" Margin="0,0,20,0" Padding="22,20">
+    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+     <Grid><StackPanel><TextBlock Text="Sound, in sync." FontWeight="SemiBold" FontSize="20"/><TextBlock x:Name="ConnectionCount" Text="Looking for your speakers..." Foreground="{StaticResource Muted}" FontSize="12" Margin="0,4,0,0"/></StackPanel><Border HorizontalAlignment="Right" VerticalAlignment="Top" Background="#F0F0F4" CornerRadius="12" Padding="12,7"><TextBlock x:Name="LiveBadge" Text="READY" FontSize="10" FontWeight="Bold" Foreground="#007AFF"/></Border></Grid>
+     <Grid Grid.Row="1" ClipToBounds="True" MinHeight="350">
+      <Canvas x:Name="MeshCanvas" SizeChanged="MeshResized"/>
+      <StackPanel x:Name="EmptyNotice" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="30,0,30,12" Visibility="Collapsed"><TextBlock Text="Connect a speaker in Windows, then refresh." Foreground="{StaticResource Muted}" HorizontalAlignment="Center"/></StackPanel>
+     </Grid>
+     <Border Grid.Row="2" Background="#F5F5F7" CornerRadius="16" Padding="15,12"><StackPanel><DockPanel><TextBlock Text="INPUT LEVEL" Foreground="{StaticResource Muted}" FontSize="10" FontWeight="SemiBold"/><TextBlock x:Name="MeterLabel" DockPanel.Dock="Right" HorizontalAlignment="Right" Text="Waiting for audio" FontSize="11" Foreground="#607487"/></DockPanel><ProgressBar x:Name="InputLevel" Minimum="0" Maximum="1" Value="0" Height="5" Foreground="#007AFF" Background="#E8E8ED" BorderThickness="0" Margin="0,9,0,0"/></StackPanel></Border>
+    </Grid>
+   </Border>
+   <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel>
+     <Border CornerRadius="24" Background="#EFEFF4" Padding="20" Margin="0,0,0,14"><StackPanel><TextBlock Text="AUDIO SOURCE" FontSize="10" FontWeight="Bold" Foreground="#6E6E73"/><ComboBox x:Name="ModeBox" SelectedIndex="2" SelectionChanged="ModeChanged" Margin="0,10,0,0"><ComboBoxItem Content="Test pulses"/><ComboBoxItem Content="WAV song"/><ComboBoxItem Content="Computer audio"/></ComboBox><ComboBox x:Name="SourceBox" DisplayMemberPath="Name" SelectionChanged="SourceChanged" Margin="0,9,0,0" ToolTip="The separate virtual output that receives computer audio."/><Button x:Name="FileButton" Content="Choose a WAV file" Click="BrowseClick" Margin="0,9,0,0" Visibility="Collapsed"/><TextBlock x:Name="SourceDetail" Text="Choose a virtual audio input." FontSize="11" Foreground="#6E6E73" Margin="0,10,0,0"/><CheckBox x:Name="KeepDefault" Content="Keep SpeakerMesh as Windows output" IsChecked="True" Margin="0,12,0,0" FontSize="12" ToolTip="While relaying, put the configured input back if Windows switches to a newly connected speaker."/></StackPanel></Border>
+     <Border CornerRadius="24" Background="White" Padding="20" Margin="0,0,0,14"><StackPanel>
+      <TextBlock Text="SPEAKER CONTROLS" FontSize="10" FontWeight="Bold" Foreground="{StaticResource Muted}"/>
+      <TextBlock x:Name="SelectedName" Text="Pick a speaker card" FontSize="18" FontWeight="SemiBold" Margin="0,10,0,4"/>
+      <TextBlock x:Name="SelectedHint" Text="Use its switch to include it in playback." FontSize="11" Foreground="{StaticResource Muted}" Margin="0,0,0,14"/>
+      <StackPanel x:Name="Inspector" IsEnabled="False">
+       <DockPanel><TextBlock Text="Volume" FontSize="13"/><TextBlock Text="{Binding VolumeText}" DockPanel.Dock="Right" HorizontalAlignment="Right" FontSize="13" FontWeight="SemiBold"/></DockPanel><Slider Minimum="0" Maximum="100" Value="{Binding Volume}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,18"/>
+       <DockPanel><TextBlock Text="Added delay" FontSize="13"/><TextBlock Text="{Binding DelayText}" DockPanel.Dock="Right" HorizontalAlignment="Right" FontSize="13" FontWeight="SemiBold"/></DockPanel>
+       <Slider Minimum="0" Maximum="2000" Value="{Binding Delay}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,10,0,5"/><TextBox Text="{Binding Delay,UpdateSourceTrigger=LostFocus}" Margin="0,0,0,12" ToolTip="Exact added delay in milliseconds, 0-2000."/>
+       <TextBlock Text="Stereo channel" FontSize="12" Margin="0,0,0,6"/><ComboBox x:Name="ChannelBox" SelectedItem="{Binding Channel}"/>
+      </StackPanel>
+      <TextBlock Text="Use Auto Sync to measure and align your speakers with a microphone. Manual timing stays available below." FontSize="11" Foreground="{StaticResource Muted}" Margin="0,15,0,0"/>
+     </StackPanel></Border>
+     <StackPanel Orientation="Horizontal"><Button Content="Save setup" Click="SaveClick" Margin="0,0,8,0"/><Button Content="Load" Click="LoadClick" Margin="0,0,8,0"/><Button Content="Copy info" Click="DiagnosticsClick" Padding="12,10"/></StackPanel>
+    </StackPanel>
+   </ScrollViewer>
+  </Grid>
+  <Grid Grid.Row="3" Margin="0,18,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><StackPanel VerticalAlignment="Center"><TextBlock x:Name="Status" Text="Choose your speakers. Your input is kept separate automatically." FontSize="12" FontWeight="SemiBold"/><TextBlock Text="Shared stereo with adjustable timing. Wireless delays still depend on each speaker." FontSize="11" Foreground="{StaticResource Muted}" Margin="0,4,16,0"/></StackPanel><Button x:Name="StartButton" Grid.Column="1" Content="Start listening" Click="StartClick" Background="#007AFF" Foreground="White" Padding="29,15" FontSize="14"/></Grid>
+ </Grid>
+</Window>
+
+
+
