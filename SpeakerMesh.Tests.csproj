@@ -1,8 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
- <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net9.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
- <ItemGroup><Compile Include="../SpeakerMesh/AcousticAnalysis.cs" Link="AcousticAnalysis.cs"/><Compile Include="../SpeakerMesh/WindowsOutput.cs" Link="WindowsOutput.cs"/><Compile Include="../SpeakerMesh/DevicePolicy.cs" Link="DevicePolicy.cs"/><Compile Include="../SpeakerMesh/Timing.cs" Link="Timing.cs"/><Compile Include="../SpeakerMesh/AudioCore.cs" Link="AudioCore.cs"/><Compile Include="../SpeakerMesh/NativeAudio.cs" Link="NativeAudio.cs"/><Compile Include="../SpeakerMesh/AudioSession.cs" Link="AudioSession.cs"/></ItemGroup>
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+ <ItemGroup><Compile Include="Tests/**/*.cs"/><ProjectReference Include="Core/SpeakerMesh.Core.csproj"/></ItemGroup>
 </Project>
-
-
-
-

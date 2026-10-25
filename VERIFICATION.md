@@ -1,3 +1,18 @@
+# SpeakerMesh 0.5 preview verification
+
+Validated in the Linux cloud workspace:
+
+- .NET SDK 10.0.403 application Release build: zero warnings, zero errors.
+- `dotnet run --project SpeakerMesh.Tests.csproj -c Release`: 33 passed, zero failed.
+- `dotnet publish SpeakerMesh.csproj -c Release -r win-x64 --self-contained true -o artifacts/win-x64`: succeeded.
+- `git diff --check`: passed.
+
+Not executed: Windows native audio/endpoint-volume behavior, WPF/tray UI, Inno Setup compilation, installation/update/uninstall, physical speaker synchronization, sleep/wake, hardware reconnection, or long-duration playback. CI configuration has been added; its remote execution has not been verified here. Signing and automatic updates are not implemented. See `docs/PRODUCTION-READINESS.md` for the complete seven-step status and acceptance gates.
+
+The notes below describe the original 0.4 release and are not evidence that the new preview passed those native checks.
+
+---
+
 # SpeakerMesh 0.4 verification
 
 Release build: zero warnings and zero errors. 64 engine/routing/native checks and six offscreen interface checks passed, zero failed.

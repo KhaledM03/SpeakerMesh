@@ -1,0 +1,3 @@
+<Project>
+ <PropertyGroup><BaseIntermediateOutputPath>obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath><BaseOutputPath>bin/$(MSBuildProjectName)/</BaseOutputPath><EnableWindowsTargeting>true</EnableWindowsTargeting></PropertyGroup>
+</Project>

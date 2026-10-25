@@ -16,7 +16,7 @@ public sealed class SetupWindow:Window {
   driver.Click+=(_,_)=> {Process.Start(new ProcessStartInfo("https://vb-audio.com/Cable/"){UseShellExecute=true});message.Text="On the official site, download VB-CABLE. Extract it, run the vendor's setup as administrator, and restart Windows as directed. Then reopen SpeakerMesh and finish setup. The driver is not bundled in this app.";};root.Children.Add(driver);
   var settings=new Button{Content="Open Windows Sound settings",Padding=new Thickness(15,12,15,12),Margin=new Thickness(0,0,0,10),HorizontalContentAlignment=HorizontalAlignment.Left};settings.Click+=(_,_)=>Process.Start(new ProcessStartInfo("ms-settings:sound"){UseShellExecute=true});root.Children.Add(settings);
   finish=new Button{Content="2. Detect input and finish setup",Padding=new Thickness(15,12,15,12),Margin=new Thickness(0,0,0,12),HorizontalContentAlignment=HorizontalAlignment.Left};finish.Click+=Finish;root.Children.Add(finish);
-  root.Children.Add(new TextBlock{Text="No microphone or recording-device default is changed. SpeakerMesh starts relaying before it takes over Windows playback, and restores previous playback defaults on stop/close where available.",FontSize=11,Foreground=Brushes.SlateGray,TextWrapping=TextWrapping.Wrap,LineHeight=17});
+  root.Children.Add(new TextBlock{Text="No microphone or recording-device default is changed. SpeakerMesh starts relaying before it takes over Windows playback, and restores previous playback defaults on stop/exit where available. Closing the playing window keeps audio running in the tray.",FontSize=11,Foreground=Brushes.SlateGray,TextWrapping=TextWrapping.Wrap,LineHeight=17});
   ShowDetected(endpoints);
  }
  void ShowDetected(List<Endpoint> endpoints) {

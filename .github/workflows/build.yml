@@ -1,0 +1,31 @@
+name: Build and verify
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet build SpeakerMesh.csproj -c Release -p:UseSharedCompilation=false
+      - run: dotnet run --project SpeakerMesh.Tests.csproj -c Release
+      - name: Package Windows preview
+        if: runner.os == 'Windows'
+        run: dotnet publish SpeakerMesh.csproj -c Release -r win-x64 --self-contained true -o artifacts/win-x64
+      - name: Compile preview installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" packaging/SpeakerMesh.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Installer compilation failed' }
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
+        with:
+          name: SpeakerMesh-windows-preview
+          path: artifacts/

@@ -11,7 +11,7 @@ public static class DevicePolicy {
 }
 public sealed class SpeakerView : INotifyPropertyChanged {
  public string Id {get;}
- string name;bool connected,selected;double volume=25,delay;ChannelMode channel;
+ string name;bool connected,selected,muted;double volume=25,delay;ChannelMode channel;
  public SpeakerView(Endpoint endpoint) {Id=endpoint.Id;name=endpoint.Name;connected=true;}
  public string Name {get=>name;set {if(name==value)return;name=value;Changed();Changed(nameof(Title));}}
  public string Title=>Name.StartsWith("Headphones (")||Name.StartsWith("Speakers (")?Name.Replace("Headphones (","").Replace("Speakers (","").TrimEnd(')'):Name.Split(" (")[0];
@@ -19,11 +19,12 @@ public sealed class SpeakerView : INotifyPropertyChanged {
  public string ConnectionText=>Connected?"Connected to Windows":"Disconnected";
  public bool Selected {get=>selected;set{if(selected==value)return;selected=value;Changed();}}
  public double Volume {get=>volume;set{if(volume==value)return;volume=value;Changed();Changed(nameof(VolumeText));}}
+ public bool Muted {get=>muted;set{if(muted==value)return;muted=value;Changed();}}
  public string VolumeText=>$"{Volume:0}%";
  public double Delay {get=>delay;set{if(delay==value)return;delay=value;Changed();Changed(nameof(DelayText));}}
  public string DelayText=>$"{Delay:0} ms";
  public ChannelMode Channel {get=>channel;set{if(channel==value)return;channel=value;Changed();}}
- public OutputConfig Config()=>new(Id,Name,Delay,Volume/100,Channel);
+ public OutputConfig Config()=>new(Id,Name,Delay,Volume/100,Channel,Muted);
  public event PropertyChangedEventHandler? PropertyChanged;
  void Changed([CallerMemberName]string? property=null)=>PropertyChanged?.Invoke(this,new(property));
 }
