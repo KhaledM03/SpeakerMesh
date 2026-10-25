@@ -107,7 +107,7 @@ public partial class MainWindow:Window {
   } else {
    bool isDefault=NativeAudio.DefaultOutputId()==dedicated.Id;
    SetupHeadline.Text=isDefault?"Computer audio is pointed at your virtual input.":"Your virtual input is ready.";
-   SetupHint.Text=isDefault?"Select your speakers and start listening. Previous defaults are restored when you stop or close.":"Finish setup to name it SpeakerMesh and use it as Windows' output.";
+   SetupHint.Text=isDefault?"Select your speakers and start listening. Previous defaults are restored when you stop or exit from the tray.":"Finish setup to name it SpeakerMesh and use it as Windows' output.";
    DefaultButton.Content=isDefault?"Output settings":"Use SpeakerMesh";SetupBanner.Background=Brush("#F0F5FF");
   }
  }
